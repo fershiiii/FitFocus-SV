@@ -11,8 +11,6 @@ export async function getExercises() {
 
     const exercises = Array.isArray(data.results) ? data.results : [];
 
-    console.log("PRIMER EJERCICIO:", exercises[0]);
-
     return exercises;
   } catch (error) {
     console.error("Error al obtener ejercicios:", error);
