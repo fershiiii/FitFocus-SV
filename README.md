@@ -121,7 +121,7 @@ npx expo start
 
 * Fernando Aldair Durán Amaya     DA250300
 * Harold Albeiro Quintanilla Rodriguez   QR241622
-* Eduardo Josue Ortiz Orellana        00172577
+* Eduardo Josue Ortiz Orellana        OO172577
 * William Alexander Aviles Del Cid    AD252973
 * Gabriela Maria Flores Noguera     FN230267
 
