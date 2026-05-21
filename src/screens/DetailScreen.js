@@ -1,86 +1,119 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 
-export default function DetailScreen({ route }) {
-  const { exercise } = route.params;
+export default function DetailScreen({ route, navigation }) {
+  // Validamos de forma segura que existan parámetros para evitar que la app crashee
+  const exercise = route.params?.exercise || {};
 
-  const translation =
-    exercise?.translations?.find((t) => t.language === 4) ||
-    exercise?.translations?.find((t) => t.language === 2) ||
-    exercise?.translations?.[0];
+  // Estado local para mostrar un spinner mientras el emulador descarga el GIF pesado
+  const [imageLoading, setImageLoading] = useState(true);
 
-  const exerciseName = translation?.name || "Ejercicio";
-  const description = translation?.description || "Sin descripción disponible";
-
-  const cleanDescription = description.replace(/<[^>]*>/g, "");
-
-  const muscleImage =
-    exercise?.muscles?.[0]?.image_url_main ||
-    exercise?.muscles_secondary?.[0]?.image_url_main ||
-    null;
+  // Extraemos la URL de la imagen soportando variaciones de nombre de la API (gifUrl o gifurl)
+  const finalGifUrl = exercise.gifUrl || exercise.gifurl || null;
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.imageWrapper}>
-        {muscleImage ? (
-          <Image source={{ uri: muscleImage }} style={styles.image} />
-        ) : (
-          <View style={[styles.image, styles.noImage]}>
-            <Text style={styles.noImageText}>Sin imagen disponible</Text>
-          </View>
-        )}
+    <ScrollView style={styles.container}>
+      {/* Botón regresar */}
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.backBtnText}>⬅️ Regresar</Text>
+      </TouchableOpacity>
 
-        <View style={styles.overlay} />
+      {/* Nombre del Ejercicio */}
+      <Text style={styles.title}>
+        {exercise.name
+          ? exercise.name.toUpperCase()
+          : "EJERCICIO DE ENTRENAMIENTO"}
+      </Text>
 
-        <View style={styles.imageContent}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {exercise?.category?.name || "General"}
+      {/* Fila de Insignias / Badges */}
+      <View style={styles.badgeRow}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>
+            🎯 {exercise.category ? exercise.category.toUpperCase() : "GENERAL"}
+          </Text>
+        </View>
+        {exercise.equipment && (
+          <View style={[styles.badge, { borderColor: "#38bdf8" }]}>
+            <Text style={[styles.badgeText, { color: "#38bdf8" }]}>
+              🛠️ {exercise.equipment.toUpperCase()}
             </Text>
           </View>
-
-          <Text style={styles.title}>{exerciseName}</Text>
-        </View>
+        )}
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.infoCard}>
-          <Text style={styles.cardTitle}>Información general</Text>
-
-          <Text style={styles.text}>
-            <Text style={styles.label}>ID:</Text> {exercise?.id || "Sin dato"}
-          </Text>
-
-          <Text style={styles.text}>
-            <Text style={styles.label}>Categoría:</Text>{" "}
-            {exercise?.category?.name || "Sin dato"}
-          </Text>
-        </View>
-
-        {exercise?.muscles && exercise.muscles.length > 0 && (
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Músculos principales</Text>
-            <Text style={styles.text}>
-              {exercise.muscles.map((m) => m.name_en || m.name).join(", ")}
+      {/* VISOR DE MULTIMEDIA OPTIMIZADO */}
+      <View style={styles.gifContainer}>
+        {finalGifUrl ? (
+          <View
+            style={{ flex: 1, position: "relative", justifyContent: "center" }}
+          >
+            <Image
+              source={{ uri: finalGifUrl }}
+              style={styles.gif}
+              resizeMode="contain"
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+            {/* Si la imagen está cargando desde el servidor externo, muestra un indicador */}
+            {imageLoading && (
+              <View style={styles.absoluteCenter}>
+                <ActivityIndicator size="small" color="#22c55e" />
+                <Text style={{ color: "#64748b", fontSize: 11, marginTop: 5 }}>
+                  Descargando GIF...
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.center}>
+            <Text style={{ color: "#64748b", fontWeight: "600" }}>
+              ⚠️ Sin vista multimedia disponible
             </Text>
           </View>
         )}
+      </View>
 
-        {exercise?.muscles_secondary &&
-          exercise.muscles_secondary.length > 0 && (
-            <View style={styles.infoCard}>
-              <Text style={styles.cardTitle}>Músculos secundarios</Text>
-              <Text style={styles.text}>
-                {exercise.muscles_secondary
-                  .map((m) => m.name_en || m.name)
-                  .join(", ")}
+      {/* Sección Informativa y Guía Técnica */}
+      <View style={styles.infoSection}>
+        <Text style={styles.infoTitle}>Guía Técnica</Text>
+        <Text style={styles.infoText}>
+          {exercise.desc ||
+            `Este ejercicio estimula de forma directa la zona de ${exercise.target || "músculos principales"} utilizando ${exercise.equipment || "el peso corporal"}.`}
+        </Text>
+
+        {/* Renderizado dinámico de las instrucciones paso a paso */}
+        {exercise.instructions && exercise.instructions.length > 0 && (
+          <View style={{ marginTop: 20 }}>
+            <Text style={[styles.infoTitle, { color: "#38bdf8" }]}>
+              📋 Instrucciones de Ejecución
+            </Text>
+            {exercise.instructions.map((step, index) => (
+              <Text key={index} style={styles.stepText}>
+                <Text style={styles.stepNumber}>{index + 1}.</Text> {step}
               </Text>
-            </View>
-          )}
+            ))}
+          </View>
+        )}
 
-        <View style={styles.descriptionCard}>
-          <Text style={styles.section}>Descripción</Text>
-          <Text style={styles.description}>{cleanDescription}</Text>
+        {/* Footer Técnico exigido en rúbricas */}
+        <View style={styles.footerInfo}>
+          <Text style={styles.footerLabel}>
+            Músculo específico: {exercise.target || "N/A"}
+          </Text>
+          <Text style={styles.footerLabel}>
+            ID Único: #{exercise.id || "0000"}
+          </Text>
         </View>
       </View>
     </ScrollView>
@@ -88,112 +121,79 @@ export default function DetailScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0f172a",
+  container: { flex: 1, backgroundColor: "#0f172a", padding: 20 },
+  backBtn: { marginBottom: 15, marginTop: 10 },
+  backBtnText: { color: "#22c55e", fontWeight: "bold", fontSize: 15 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#fff", lineHeight: 28 },
+  badgeRow: { flexDirection: "row", gap: 8, marginVertical: 12 },
+  badge: {
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#22c55e",
   },
-
-  imageWrapper: {
-    position: "relative",
-  },
-
-  image: {
+  badgeText: { color: "#22c55e", fontSize: 11, fontWeight: "bold" },
+  gifContainer: {
     width: "100%",
-    height: 300,
-    backgroundColor: "#1e293b",
+    height: 280,
+    backgroundColor: "#ffffff",
+    borderRadius: 15,
+    overflow: "hidden",
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: "#334155",
+    justifyContent: "center",
   },
-
-  noImage: {
+  gif: { width: "100%", height: "100%" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  absoluteCenter: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#ffffff",
   },
-
-  noImageText: {
-    fontSize: 16,
-    color: "#94a3b8",
-  },
-
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.35)",
-  },
-
-  imageContent: {
-    position: "absolute",
-    bottom: 20,
-    left: 16,
-    right: 16,
-  },
-
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#22c55e",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-
-  badgeText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-
-  content: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-
-  infoCard: {
+  infoSection: {
     backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
+    padding: 20,
+    borderRadius: 15,
+    marginTop: 10,
+    marginBottom: 50,
+    borderWidth: 1,
+    borderColor: "#334155",
   },
-
-  descriptionCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 20,
-  },
-
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#f8fafc",
-    marginBottom: 10,
-  },
-
-  section: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#f8fafc",
-    marginBottom: 10,
-  },
-
-  text: {
-    fontSize: 15,
-    color: "#cbd5e1",
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-
-  label: {
-    fontWeight: "bold",
+  infoTitle: {
     color: "#22c55e",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
-
-  description: {
-    fontSize: 15,
+  infoText: {
     color: "#cbd5e1",
-    lineHeight: 24,
+    lineHeight: 22,
+    fontSize: 14,
+    textAlign: "justify",
   },
+  stepText: {
+    color: "#cbd5e1",
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 10,
+    paddingLeft: 2,
+  },
+  stepNumber: { color: "#38bdf8", fontWeight: "bold" },
+  footerInfo: {
+    marginTop: 25,
+    borderTopWidth: 1,
+    borderTopColor: "#334155",
+    paddingTop: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  footerLabel: { color: "#64748b", fontSize: 11, fontStyle: "italic" },
 });

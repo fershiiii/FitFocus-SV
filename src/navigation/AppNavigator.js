@@ -1,77 +1,125 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Image, View } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Text } from "react-native";
 
 import SplashScreen from "../screens/SplashScreen";
 import HomeScreen from "../screens/HomeScreen";
+import ExercisesScreen from "../screens/ExercisesScreen";
 import DetailScreen from "../screens/DetailScreen";
+import CreateRoutineScreen from "../screens/CreateRoutineScreen";
+import DietTrackerScreen from "../screens/DietTrackerScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import SearchExercisesScreen from "../screens/SearchExercisesScreen";
+import RoutineDetailScreen from "../screens/RoutineDetailScreen"; // 💥 NUEVA IMPORTACIÓN
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function HomeStackNavigator() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: "#0f172a" },
+        headerTintColor: "#fff",
+        headerTitleAlign: "center",
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen
+        name="HomeList"
+        component={HomeScreen}
+        options={{ title: "FitFocus Hub" }}
+      />
+      <Stack.Screen
+        name="CreateRoutine"
+        component={CreateRoutineScreen}
+        options={{ title: "Planificador Local" }}
+      />
+      {/* 📋 NUEVA SCREEN EN EL STACK: Detalle de Rutina con Ejercicios Inyectados */}
+      <Stack.Screen
+        name="RoutineDetail"
+        component={RoutineDetailScreen}
+        options={{ title: "Ejercicios de la Rutina" }}
+      />
+      <Stack.Screen
+        name="ExercisesScreen"
+        component={ExercisesScreen}
+        options={{ title: "Biblioteca Multimedia" }}
+      />
+      <Stack.Screen
+        name="SearchExercises"
+        component={SearchExercisesScreen}
+        options={{ title: "Buscador Experto API" }}
+      />
+      <Stack.Screen
+        name="Detail"
+        component={DetailScreen}
+        options={{ title: "Técnica del Ejercicio" }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: "#0f172a" },
+        headerTintColor: "#ffffff",
+        tabBarStyle: {
+          backgroundColor: "#0f172a",
+          borderTopColor: "#1e293b",
+          paddingBottom: 5,
+          height: 60,
+        },
+        tabBarActiveTintColor: "#22c55e",
+        tabBarInactiveTintColor: "#94a3b8",
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+      }}
+    >
+      <Tab.Screen
+        name="ExercisesTab"
+        component={HomeStackNavigator}
+        options={{
+          title: "Inicio",
+          headerShown: false,
+          tabBarIcon: () => <Text style={{ fontSize: 18 }}>🏠</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="DietTracker"
+        component={DietTrackerScreen}
+        options={{
+          title: "Nutrición IA",
+          headerShown: true,
+          tabBarIcon: () => <Text style={{ fontSize: 18 }}>📸</Text>,
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          title: "Mi Perfil",
+          headerShown: true,
+          tabBarIcon: () => <Text style={{ fontSize: 18 }}>👤</Text>,
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Splash"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: "#0f172a",
-          },
-          headerTintColor: "#ffffff",
-          headerTitleAlign: "center",
-        }}
+        screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen
-          name="Splash"
-          component={SplashScreen}
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            headerTitle: () => (
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  backgroundColor: "#1e293b",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  overflow: "hidden",
-                  borderWidth: 2,
-                  borderColor: "#22c55e",
-                }}
-              >
-                <Image
-                  source={require("../../assets/logo.png")}
-                  style={{ width: 28, height: 28 }}
-                  resizeMode="contain"
-                />
-              </View>
-            ),
-          }}
-        />
-
-        <Stack.Screen
-          name="Detail"
-          component={DetailScreen}
-          options={{
-            title: "Ejercicio",
-          }}
-        />
-
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            title: "Perfil",
-          }}
-        />
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Main" component={MainTabNavigator} />
+        <Stack.Screen name="Home" component={MainTabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );

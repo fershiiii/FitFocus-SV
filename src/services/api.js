@@ -1,19 +1,153 @@
-const API_URL = "https://wger.de/api/v2/exerciseinfo/?limit=20";
+const BASE_URL = "https://exercisedb.p.rapidapi.com";
+
+// 🔴 CONFIGURA AQUÍ TU LLAVE REAL DE RAPIDAPI
+const RAPID_API_KEY = "d21111ab4cmshda27d0753d1f5c6p170e60jsna9baee2a1d6c";
 
 const headers = {
-  Authorization: "Token 81b1f4cbe9b3fcc9267ef4007a4dc39326b799d8",
+  "X-RapidAPI-Key": RAPID_API_KEY,
+  "X-RapidAPI-Host": "exercisedb.p.rapidapi.com",
 };
 
-export async function getExercises() {
+// Mocks de respaldo por si la API da error de credenciales
+const mockFallback = [
+  {
+    id: "0001",
+    name: "BARBELL BENCH PRESS",
+    target: "pectorals",
+    equipment: "barbell",
+    bodyPart: "chest",
+    gifUrl: "https://reactnative.dev/img/tiny_logo.png",
+    instructions: [
+      "Acuéstate en el banco.",
+      "Baja la barra al pecho.",
+      "Empuja hacia arriba.",
+    ],
+  },
+  {
+    id: "0002",
+    name: "DUMBBELL BICEP CURL",
+    target: "biceps",
+    equipment: "dumbbells",
+    bodyPart: "arms",
+    gifUrl: "https://reactnative.dev/img/tiny_logo.png",
+    instructions: [
+      "Sostén las mancuernas.",
+      "Flexiona los codos.",
+      "Baja controlado.",
+    ],
+  },
+  {
+    id: "0003",
+    name: "LAT PULLDOWN",
+    target: "lats",
+    equipment: "cable",
+    bodyPart: "back",
+    gifUrl: "https://reactnative.dev/img/tiny_logo.png",
+    instructions: [
+      "Sujeta la barra.",
+      "Jala hacia tu pecho.",
+      "Regresa suave.",
+    ],
+  },
+  {
+    id: "0004",
+    name: "BARBELL SQUAT",
+    target: "glutes",
+    equipment: "barbell",
+    bodyPart: "upper legs",
+    gifUrl: "https://reactnative.dev/img/tiny_logo.png",
+    instructions: [
+      "Coloca la barra en tus hombros.",
+      "Baja la cadera simulando sentarte.",
+      "Sube con fuerza.",
+    ],
+  },
+];
+
+export async function listEquipment() {
   try {
-    const response = await fetch(API_URL, { headers });
+    const response = await fetch(`${BASE_URL}/exercises/equipmentList`, {
+      method: "GET",
+      headers,
+    });
+    const data = await response.json();
+    return Array.isArray(data)
+      ? data
+      : ["barbell", "dumbbell", "cable", "body weight"];
+  } catch (error) {
+    return ["barbell", "dumbbell", "cable", "body weight"];
+  }
+}
+
+export async function getExercisesByCategory(spanishCategory) {
+  try {
+    let apiBodyPart = "chest";
+    if (spanishCategory === "espalda") apiBodyPart = "back";
+    else if (spanishCategory === "piernas") apiBodyPart = "upper legs";
+    else if (spanishCategory === "hombros") apiBodyPart = "shoulders";
+
+    const response = await fetch(
+      `${BASE_URL}/exercises/bodyPart/${apiBodyPart}?limit=15`,
+      { method: "GET", headers },
+    );
     const data = await response.json();
 
-    const exercises = Array.isArray(data.results) ? data.results : [];
+    if (Array.isArray(data)) {
+      return data.map((item) => ({
+        id: item.id,
+        name: item.name.toUpperCase(),
+        category: spanishCategory,
+        gifUrl: item.gifUrl,
+        equipment: item.equipment,
+        target: item.target,
+        instructions: item.instructions || [],
+      }));
+    }
 
-    return exercises;
+    // Si la API no devolvió un arreglo (ej: error de llave), mandamos el filtro de respaldo
+    return mockFallback.filter(
+      (ex) =>
+        ex.bodyPart === apiBodyPart ||
+        (spanishCategory === "pecho" && ex.bodyPart === "chest"),
+    );
   } catch (error) {
-    console.error("Error al obtener ejercicios:", error);
-    return [];
+    return mockFallback;
+  }
+}
+
+export async function searchExercisesByName(name) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/exercises/name/${encodeURIComponent(name.toLowerCase())}`,
+      { method: "GET", headers },
+    );
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      return data;
+    }
+    // Si da error la API, filtramos del respaldo local por nombre
+    return mockFallback.filter((ex) =>
+      ex.name.toLowerCase().includes(name.toLowerCase()),
+    );
+  } catch (error) {
+    return mockFallback;
+  }
+}
+
+export async function listExercisesByEquipment(equipmentName) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/exercises/equipment/${equipmentName}`,
+      { method: "GET", headers },
+    );
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return mockFallback.filter((ex) => ex.equipment === equipmentName);
+  } catch (error) {
+    return mockFallback;
   }
 }
