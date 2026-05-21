@@ -1,7 +1,7 @@
 const BASE_URL = "https://exercisedb.p.rapidapi.com";
 
-// 🔴 CONFIGURA AQUÍ TU LLAVE REAL DE RAPIDAPI
-const RAPID_API_KEY = "d21111ab4cmshda27d0753d1f5c6p170e60jsna9baee2a1d6c";
+// 🔐 REPARACIÓN DE SEGURIDAD: Consumimos la llave desde las variables de entorno locales
+const RAPID_API_KEY = process.env.EXPO_PUBLIC_RAPID_API_KEY;
 
 const headers = {
   "X-RapidAPI-Key": RAPID_API_KEY,
