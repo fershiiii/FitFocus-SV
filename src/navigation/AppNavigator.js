@@ -10,9 +10,10 @@ import ExercisesScreen from "../screens/ExercisesScreen";
 import DetailScreen from "../screens/DetailScreen";
 import CreateRoutineScreen from "../screens/CreateRoutineScreen";
 import DietTrackerScreen from "../screens/DietTrackerScreen";
-import ProfileScreen from "../screens/ProfileScreen";
+// 🔄 CAMBIO: Importación del nuevo componente de Control de Asistencia
+import WorkoutTrackerScreen from "../screens/WorkoutTrackerScreen";
 import SearchExercisesScreen from "../screens/SearchExercisesScreen";
-import RoutineDetailScreen from "../screens/RoutineDetailScreen"; // 💥 NUEVA IMPORTACIÓN
+import RoutineDetailScreen from "../screens/RoutineDetailScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,7 +38,6 @@ function HomeStackNavigator() {
         component={CreateRoutineScreen}
         options={{ title: "Planificador Local" }}
       />
-      {/* 📋 NUEVA SCREEN EN EL STACK: Detalle de Rutina con Ejercicios Inyectados */}
       <Stack.Screen
         name="RoutineDetail"
         component={RoutineDetailScreen}
@@ -92,18 +92,18 @@ function MainTabNavigator() {
         name="DietTracker"
         component={DietTrackerScreen}
         options={{
-          title: "Nutrición IA",
+          title: "Diario Visual", // 🔄 Ajustado para la idea del BeReal de comidas
           headerShown: true,
           tabBarIcon: () => <Text style={{ fontSize: 18 }}>📸</Text>,
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="WorkoutTracker" // 🔄 CAMBIO: Nombre identificador de la pestaña
+        component={WorkoutTrackerScreen} // 🔄 CAMBIO: Componente de Asistencia asignado
         options={{
-          title: "Mi Perfil",
+          title: "Asistencia Gym", // 🔄 CAMBIO: Etiqueta visible en el menú inferior
           headerShown: true,
-          tabBarIcon: () => <Text style={{ fontSize: 18 }}>👤</Text>,
+          tabBarIcon: () => <Text style={{ fontSize: 18 }}>🏋️‍♂️</Text>, // 🔄 CAMBIO: Emoji representativo
         }}
       />
     </Tab.Navigator>
