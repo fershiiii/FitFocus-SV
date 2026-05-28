@@ -12,32 +12,42 @@ import {
 import * as SecureStore from "expo-secure-store";
 import * as Location from "expo-location";
 import { useCameraPermissions } from "expo-camera";
+// 🟢 REQUERIMIENTO: Importamos AsyncStorage para persistir el historial completo al cerrar la app
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const HISTORIAL_STORAGE_KEY = "@fitfocus_histividad_calendario";
 
 export default function WorkoutTrackerScreen() {
   const [rachaDias, setRachaDias] = useState("0");
   const [permission, requestPermission] = useCameraPermissions();
   const [historialActividad, setHistorialActividad] = useState([]);
 
-  // 💥 NUEVOS ESTADOS: Controlan el cuadro de diálogo para preguntar qué hizo
   const [modalVisible, setModalVisible] = useState(false);
   const [actividadTexto, setActividadTexto] = useState("");
 
+  // 🟢 MODIFICADO: Ahora carga la racha y también el historial de días del disco al abrir la pantalla
   useEffect(() => {
-    cargarRachaSegura();
+    cargarDatosPersistidos();
   }, []);
 
-  const cargarRachaSegura = async () => {
+  const cargarDatosPersistidos = async () => {
     try {
+      // 1. Cargar racha cifrada (SecureStore)
       let racha = await SecureStore.getItemAsync("user_fitness_racha");
       if (racha) {
         setRachaDias(racha);
       }
+
+      // 2. Cargar historial de tarjetas del calendario (AsyncStorage)
+      let historialGuardado = await AsyncStorage.getItem(HISTORIAL_STORAGE_KEY);
+      if (historialGuardado) {
+        setHistorialActividad(JSON.parse(historialGuardado));
+      }
     } catch (e) {
-      console.error("Error cargando datos de SecureStore", e);
+      console.error("Error cargando datos locales persistentes:", e);
     }
   };
 
-  // 💥 PASO 1: Valida los sensores obligatorios de la rúbrica antes de preguntar la actividad
   const iniciarFlujoRegistro = async () => {
     let { status: gpsStatus } =
       await Location.requestForegroundPermissionsAsync();
@@ -65,7 +75,6 @@ export default function WorkoutTrackerScreen() {
       month: "long",
     });
 
-    // Validar si ya registró el día de hoy antes de abrir el modal
     if (historialActividad.some((item) => item.fecha === fechaFormateada)) {
       Alert.alert(
         "¡Día Completado!",
@@ -74,11 +83,9 @@ export default function WorkoutTrackerScreen() {
       return;
     }
 
-    // Si los sensores y la fecha están OK, abrimos el formulario flotante
     setModalVisible(true);
   };
 
-  // 💥 PASO 2: Guarda la actividad física digitada en el calendario/historial
   const procesarGuardadoActividad = async () => {
     if (actividadTexto.trim() === "") {
       Alert.alert(
@@ -105,19 +112,24 @@ export default function WorkoutTrackerScreen() {
         id: Date.now().toString(),
         fecha: fechaFormateada,
         hora: horaFormateada,
-        actividad: actividadTexto.trim(), // Guardamos el texto personalizado
+        actividad: actividadTexto.trim(),
         tagLugar: "Zona Activa (San Salvador)",
       };
 
       const nuevoHistorial = [nuevoDiaCompletado, ...historialActividad];
       setHistorialActividad(nuevoHistorial);
 
-      // Modificar y guardar la racha de forma segura en SecureStore
+      // 🟢 SOLUCIÓN AL BUG: Guardado físico del arreglo en almacenamiento local permanente
+      await AsyncStorage.setItem(
+        HISTORIAL_STORAGE_KEY,
+        JSON.stringify(nuevoHistorial),
+      );
+
+      // Guardar la racha numérica en SecureStore
       const nuevaRachaCalculada = nuevoHistorial.length.toString();
       setRachaDias(nuevaRachaCalculada);
       await SecureStore.setItemAsync("user_fitness_racha", nuevaRachaCalculada);
 
-      // Resetear estados del formulario flotante
       setModalVisible(false);
       setActividadTexto("");
 
@@ -234,7 +246,6 @@ export default function WorkoutTrackerScreen() {
                 <Text style={styles.diaFechaText}>
                   {item.fecha.toUpperCase()}
                 </Text>
-                {/* 💥 Mostramos la respuesta personalizada del usuario en texto resaltado */}
                 <Text style={styles.diaActividadText}>✨ {item.actividad}</Text>
                 <Text style={styles.diaHoraText}>
                   Registrado a las: {item.hora}
@@ -249,6 +260,7 @@ export default function WorkoutTrackerScreen() {
   );
 }
 
+// (Mantenemos los mismos estilos intactos abajo...)
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0f172a", padding: 16 },
   title: { fontSize: 24, fontWeight: "bold", color: "#fff", marginBottom: 4 },
@@ -258,7 +270,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 18,
   },
-
   rachaCard: {
     flexDirection: "row",
     backgroundColor: "#1e293b",
@@ -278,7 +289,6 @@ const styles = StyleSheet.create({
   },
   rachaDesc: { color: "#fff", fontSize: 14, marginTop: 2 },
   rachaNumero: { color: "#eab308", fontWeight: "bold" },
-
   registroBox: {
     backgroundColor: "#111827",
     borderRadius: 16,
@@ -314,8 +324,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 14,
   },
-
-  // Estilos del Formulario Flotante (Modal)
   modalCenteredView: {
     flex: 1,
     justifyContent: "center",
@@ -372,7 +380,6 @@ const styles = StyleSheet.create({
   modalBtnCancelar: { backgroundColor: "#334155" },
   modalBtnGuardar: { backgroundColor: "#22c55e" },
   modalBtnText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
-
   calendarioSection: { marginBottom: 40 },
   calendarioTitle: {
     color: "#fff",
@@ -389,7 +396,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     paddingHorizontal: 20,
   },
-
   diaCard: {
     flexDirection: "row",
     backgroundColor: "#1e293b",
@@ -424,7 +430,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginTop: 4,
-  }, // Color azul celeste para resaltar la actividad
+  },
   diaHoraText: { color: "#94a3b8", fontSize: 11, marginTop: 4 },
   diaUbicacionText: {
     color: "#64748b",
