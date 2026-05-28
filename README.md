@@ -1,142 +1,103 @@
-# FitFocus SV
+# FitFocus SV - Fase 2 (Entrega Final)
 
 ## Descripción del proyecto
+FitFocus SV es una aplicación móvil multiplataforma desarrollada con **React Native** y **Expo**. Su propósito original fue permitir a los usuarios visualizar ejercicios físicos detallados. 
 
-FitFocus SV es una aplicación móvil desarrollada con React Native utilizando Expo. Su propósito es permitir a los usuarios visualizar ejercicios físicos, conocer los músculos que trabajan y acceder a información detallada de cada ejercicio.
-
-La aplicación consume una API pública (wger API) para obtener datos reales de ejercicios, los cuales se muestran en una interfaz clara y organizada.
-
-Este proyecto corresponde a la Fase 1, en la cual se establecen las bases del desarrollo, incluyendo la estructura del proyecto, navegación entre pantallas, consumo de API y diseño inicial.
+Para esta **Fase 2 (Entrega Final)**, el proyecto se ha ampliado significativamente expandiendo el ecosistema de entrenamiento local mediante la inyección avanzada de APIs REST, almacenamiento híbrido persistente (seguro y local), y la integración de sensores de hardware nativos del dispositivo simulando dinámicas de redes sociales y bitácoras fitness en tiempo real.
 
 ---
 
-## Objetivos de la Fase 1
+## 🛠️ Nuevas Funcionalidades Implementadas (Fase 2)
 
-En esta fase se desarrollaron los siguientes aspectos:
+A diferencia de la entrega inicial, se incorporaron los siguientes módulos interactivos exigidos en la rúbrica de evaluación:
 
-* Creación del repositorio en GitHub con estructura organizada
-* Diseño de la interfaz de usuario en Figma
-* Configuración del proyecto con React Native y Expo
-* Implementación de navegación entre pantallas
-* Consumo de una API REST mediante una petición GET
-* Visualización de datos dinámicos en la aplicación
+1. **Ampliación de Navegación Combinada:**
+   * Migración y reestructuración total mediante un enrutador híbrido.
+   * Uso de `createNativeStackNavigator` para la pila profunda de pantallas y guías técnicas.
+   * Integración de `createBottomTabNavigator` para el menú global inferior interactivo (Inicio, Diario Visual y Asistencia).
+   * Implementación exhaustiva de **traspaso de parámetros asíncronos** entre pantallas (`route.params`) para inyectar ejercicios desde la API hacia las rutinas del usuario.
+
+2. **Consumo Avanzado de API REST (ExerciseDB):**
+   * Se amplió el consumo integrado conectando endpoints dinámicos de RapidAPI.
+   * Inclusión de **Filtros por Categoría Muscular** interactivos (Pecho, Espalda, Piernas, Hombros).
+   * **Buscador Experto Global** en tiempo real capaz de mapear y filtrar ejercicios según el tipo de equipamiento físico (*Dumbbell, Barbell, Body weight*).
+
+3. **Almacenamiento Local y Seguro (Persistencia Híbrida):**
+   * **Historial Local (`AsyncStorage`):** Guardado persistente del feed de alimentación estilo "BeReal" y el constructor de bloques de entrenamiento. Los datos no se pierden al cerrar el software.
+   * **Seguridad Cifrada (`expo-secure-store`):** Encriptación física de la racha de días activos logrados por el usuario dentro del llavero seguro nativo del sistema operativo.
+
+4. **Sensores Nativos y Manejo de Permisos:**
+   * **Sensor de Cámara (`expo-camera`):** Gestión y disparo de solicitudes nativas de permisos globales. Implementación de visor interactivo en tiempo real para capturas instantáneas de alimentos.
+   * **Sensor de Localización (`expo-location`):** Comprobación e invocación nativa de permisos de posicionamiento en primer plano para validar las estampas cronológicas locales del usuario.
 
 ---
 
-## Tecnologías utilizadas
-
-* React Native
-* Expo
-* JavaScript
-* React Navigation
-* API REST (wger API)
-* Git y GitHub
-
----
-
-## Estructura del proyecto
-
-El proyecto está organizado en carpetas para facilitar su mantenimiento y comprensión:
-
-```
+## 📂 Estructura Actualizada del Proyecto
 src/
 ├── components/
-│   └── ExerciseCard.js
+│   └── ExerciseCard.js          # Tarjeta modular con depuración de HTML por Regex
 ├── navigation/
-│   └── AppNavigator.js
+│   └── AppNavigator.js          # Enrutador maestro (Tabs + Stacks anidados)
 ├── screens/
-│   ├── SplashScreen.js
-│   ├── HomeScreen.js
-│   ├── DetailScreen.js
-│   └── ProfileScreen.js
+│   ├── SplashScreen.js          # Pantalla de carga con hilos de animación nativa
+│   ├── HomeScreen.js            # Hub principal con Widget de agenda semanal
+│   ├── CreateRoutineScreen.js   # Diseñador local de entrenamientos
+│   ├── RoutineDetailScreen.js   # Visor de ejercicios inyectados en la rutina
+│   ├── ExercisesScreen.js       # Biblioteca conectada a la API REST externa
+│   ├── SearchExercisesScreen.js # Buscador global avanzado con filtros de accesorios
+│   ├── DetailScreen.js          # Guía técnica con renderizado multimedia de GIFs
+│   ├── DietTrackerScreen.js     # Diario visual de comidas estilo "BeReal" (Cámara/Gallery)
+│   └── WorkoutTrackerScreen.js  # Diario de hábitos (Modal + GPS simulado + SecureStore)
 └── services/
-    └── api.js
-```
+└── api.js                   # Consultas asíncronas HTTP a los Endpoints de RapidAPI
 
-### Descripción de carpetas
-
-* components: contiene componentes reutilizables como tarjetas de ejercicios
-* screens: contiene las pantallas principales de la aplicación
-* navigation: define la navegación entre pantallas
-* services: maneja la conexión con la API
 
 ---
 
-## Funcionalidades implementadas
+## 📦 Librerías y Dependencias Utilizadas (Nuevas de Fase 2)
 
-* Visualización de ejercicios desde una API externa
-* Navegación entre pantallas (Splash, Home, Detail y Profile)
-* Visualización de detalles de cada ejercicio
-* Uso de imágenes de músculos para representar los ejercicios
-* Manejo de estados con useState y useEffect
+Para habilitar el hardware y almacenamiento nativo se agregaron las siguientes dependencias al ecosistema:
 
----
-
-## Consumo de API
-
-Se utiliza la API pública de wger:
-
-https://wger.de/api/v2/exerciseinfo/
-
-La aplicación realiza una petición GET mediante fetch para obtener los datos, los cuales se procesan y muestran en la interfaz.
+* `@react-native-async-storage/async-storage` - Almacenamiento local persistente en disco.
+* `expo-secure-store` - Cifrado seguro de credenciales y rachas en hardware protegido.
+* `expo-camera` - Control del lente, captura de fotografías y manejo de permisos de cámara.
+* `expo-location` - Acceso a las antenas de posicionamiento global y coordenadas del dispositivo.
+* `expo-image` - Decodificador optimizado de alto rendimiento para renderizado de GIFs animados en Android/BlueStacks sin congelamiento de memoria.
 
 ---
 
-## Dependencias importantes
+## 🚀 Instrucciones para Probar las Nuevas Funcionalidades
 
-El proyecto utiliza dependencias adicionales para la navegación:
+Para compilar, auditar y testear el proyecto completo en entornos físicos o emuladores (BlueStacks/Android Studio), siga estos pasos:
 
-* @react-navigation/native
-* @react-navigation/native-stack
-* react-native-screens
-* react-native-safe-area-context
+1. **Instalar Dependencias de Hardware:**
+   Instale los módulos nativos ejecutando en la raíz de su terminal:
+   ```bash
+   npm install
+Configurar Variables de Entorno:
+Cree un archivo .env en la raíz del proyecto e inyecte sus credenciales de API (Asegúrese de que el archivo .env esté incluido en el .gitignore antes de subir cambios):
 
-Estas dependencias permiten implementar la navegación entre pantallas dentro de la aplicación.
+Fragmento de código
+EXPO_PUBLIC_GEMINI_API_KEY=tu_llave_aqui
+Iniciar Servidor de Desarrollo Expo:
 
-Nota: Todas las dependencias ya se encuentran definidas en el archivo package.json, por lo que se instalan automáticamente al ejecutar npm install.
-
----
-
-## Instalación y ejecución
-
-1. Clonar el repositorio:
-
-git clone https://github.com/TU-USUARIO/FitFocusSV.git
-
-2. Acceder al proyecto:
-
-cd FitFocusSV
-
-3. Instalar dependencias:
-
-npm install
-
-4. Ejecutar la aplicación:
-
+Bash
 npx expo start
+Flujo de Pruebas Recomendado para la Evaluación:
 
----
+Módulo de Asistencia/Hábitos: Ingrese a la pestaña Asistencia Gym. Presione "Completar Día Actual". Note cómo el sistema operativo despliega los carteles nativos solicitando accesos de Cámara y Ubicación. Ingrese su actividad en el formulario flotante (Modal) y confirme; verá cómo se actualiza la racha protegida por SecureStore de forma inmediata. Cierre la app, vuélvala a abrir y note que los datos persisten.
 
-## Integrantes del equipo
+Módulo Diario Visual: Ingrese a la pestaña Diario Visual. Capture una foto en vivo o elija un archivo de la galería. La app inyectará automáticamente un badge semi-transparente con la estampa exacta de la Hora y Fecha, ordenándolos cronológicamente de forma persistente.
 
-* Fernando Aldair Durán Amaya     DA250300
-* Harold Albeiro Quintanilla Rodriguez   QR241622
-* Eduardo Josue Ortiz Orellana        OO172577
-* William Alexander Aviles Del Cid    AD252973
-* Gabriela Maria Flores Noguera     FN230267
+Inyección de Rutinas mediante API REST: En el Inicio, presione "Programar Día" o diríjase al "Diseñador de Entrenamientos". Cree una rutina. Al abrirla, presione "Buscar en la biblioteca API". Seleccione cualquier ejercicio de la lista mediante el botón ➕ y observe cómo se acopla dinámicamente a la persistencia local sin cerrar su navegación de búsqueda.
 
----
+👥 Integrantes del Equipo
+Fernando Aldair Durán Amaya        DA250300
 
-## Estado del proyecto
+Harold Albeiro Quintanilla Rodriguez  QR241622
 
-El proyecto se encuentra en desarrollo correspondiente a la Fase 1. Se han implementado las funcionalidades base necesarias para la aplicación.
+Eduardo Josue Ortiz Orellana         OO172577
 
----
+William Alexander Aviles Del Cid     AD252973
 
-## Posibles mejoras (Fase 2)
-
-* Implementación de filtros por categoría o músculo
-* Búsqueda de ejercicios
-* Mejora del diseño de la interfaz
-* Sistema de favoritos
-* Creación de rutinas personalizadas
+Gabriela Maria Flores Noguera       FN230267
